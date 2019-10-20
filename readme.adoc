@@ -1,0 +1,7 @@
+== Blue, Green, Canary Deployments
+
+----
+kubectl create namespace devoops
+
+kubectl label namespace devoops  istio-injection=enabled
+----

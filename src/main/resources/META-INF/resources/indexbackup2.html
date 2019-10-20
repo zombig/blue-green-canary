@@ -1,0 +1,130 @@
+<html>
+
+<head>
+  <title>Blue/Green/Canary</title>
+  <!-- makes the Chrome Debugger favicon.ico disappear -->
+  <link rel="shortcut icon" href="">
+  <!-- scale for mobile -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    section {
+      display: flex;
+      width: 93%;
+      height: 100px;
+      margin: auto;
+      border-radius: 5px;
+      border: 3px dashed;
+    }
+
+    .sans_big {
+      margin: auto;
+      /* Important */
+      text-align: right;
+      font-family: sans-serif;
+      font-size: 38px;
+    }
+  </style>
+
+</head>
+
+<body>
+  <section>
+    <p class="sans_big">Users: <div class="sans_big" id="userCount"></div>
+    </p>
+  </section>
+  <section>
+    <p class="sans_big">Messages: <div class="sans_big" id="msgCount"></div>
+    </p>
+  </section>
+  <script>
+    reconnectInterval = Math.floor(Math.random() * 1000); 
+
+    var sockette = new Sockette(
+      "ws://" + location.host + "/wsendpoint",
+      {
+        timeout: reconnectInterval,
+        maxAttempts: 10,
+        onopen: e => onOpen(e),
+        onmessage: e => onMessage(e),
+        onreconnect: e => console.log('Reconnecting...', e),
+        onmaximum: e => console.log('Stop Attempting!', e),
+        onclose: e => onreconnect(e),
+        onerror: e => console.log('Error:', e)
+      });
+
+    onOpen = function (event) {
+      console.log("onopen");
+      sockette.send("Browser to Server");
+    };
+
+    onMessage = function (event) {
+      console.log(event.data);
+      // document.getElementById("messages").append(event.data + "\n");
+      message = JSON.parse(event.data);
+      // console.log(message.msgCount + " " + message.color);
+      document.body.style.background = message.color;
+      document.getElementById("userCount").textContent = message.userCount;
+      document.getElementById("msgCount").textContent = message.msgCount;
+    };
+
+
+    function Sockette(url, opts) {
+      opts = opts || {};
+
+      var ws, num = 0, timer = 1, $ = {};
+      var max = opts.maxAttempts || Infinity;
+
+      $.open = function () {
+        ws = new WebSocket(url, opts.protocols || []);
+
+        ws.onmessage = opts.onmessage || noop;
+
+        ws.onopen = function (e) {
+          (opts.onopen || noop)(e);
+          num = 0;
+        };
+
+        ws.onclose = function (e) {
+          e.code === 1e3 || e.code === 1001 || e.code === 1005 || $.reconnect(e);
+          (opts.onclose || noop)(e);
+        };
+
+        ws.onerror = function (e) {
+          (e && e.code === 'ECONNREFUSED') ? $.reconnect(e) : (opts.onerror || noop)(e);
+        };
+      };
+
+      $.reconnect = function (e) {
+        if (timer && num++ < max) {
+          timer = setTimeout(function () {
+            (opts.onreconnect || noop)(e);
+            $.open();
+          }, opts.timeout || 1e3);
+        } else {
+          (opts.onmaximum || noop)(e);
+        }
+      };
+
+      $.json = function (x) {
+        ws.send(JSON.stringify(x));
+      };
+
+      $.send = function (x) {
+        ws.send(x);
+      };
+
+      $.close = function (x, y) {
+        timer = clearTimeout(timer);
+        ws.close(x || 1e3, y);
+      };
+
+      $.open(); // init
+
+      return $;
+    }
+
+
+  </script>
+</body>
+
+</html>
