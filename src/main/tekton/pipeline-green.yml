@@ -42,7 +42,7 @@ spec:
      resources:
       inputs:
         - name: image
-          resource: appImage      
+          resource: appImage
      params:
       - name: ARGS
         value:
@@ -57,10 +57,6 @@ spec:
        name: openshift-client
      runAfter:
       - set-image
-     resources:
-      inputs:
-        - name: image
-          resource: appImage      
      params:
       - name: ARGS
         value:
