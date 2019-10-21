@@ -27,10 +27,10 @@ spec:
   stepTemplate:
     resources:
       limits:
-        cpu: 4
-        memory: 4Gi
+        cpu: 250m
+        memory: 2Gi
       requests:
-        cpu: 2
+        cpu: 250m
         memory: 2Gi
     securityContext:
        allowPrivilegeEscalation: false
@@ -68,7 +68,7 @@ spec:
      volumeMounts:
      - name: varlibc
        mountPath: /var/lib/containers
-     # override security context as container image build need to run as root
+     # override security context as container image push need to run as root
      securityContext:
        allowPrivilegeEscalation: true
        runAsUser: 0

@@ -29,7 +29,7 @@ spec:
             memory: "50Mi" 
             cpu: "100m" 
           limits:
-            memory: "100Mi"
+            memory: "120Mi"
             cpu: "250m" 
         livenessProbe:
           httpGet:
@@ -37,11 +37,11 @@ spec:
               path: /hello
           initialDelaySeconds: 2
           periodSeconds: 5
-          timeoutSeconds: 2          
+          timeoutSeconds: 2
         readinessProbe:
           httpGet:
-            port: 8080            
-            path: /hello            
+            port: 8080
+            path: /hello
           initialDelaySeconds: 3
           periodSeconds: 3
-
+          timeoutSeconds: 2

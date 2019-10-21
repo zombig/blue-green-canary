@@ -47,10 +47,14 @@ kubectl replace -f src/main/istio/Virtual_service_blue.yml
 == OpenShift
 
 ----
+# 16 cores available in worker nodes
+
 oc new-project demo
-oc create serviceaccount pipeline
-oc adm policy add-scc-to-user privileged -z pipeline
-oc adm policy add-role-to-user edit -z pipeline
+# oc create serviceaccount pipeline
+# oc adm policy add-scc-to-user privileged -z pipeline
+# oc adm policy add-role-to-user edit -z pipeline
+
+oc create -f src/main/tekton/pipeline-sa-role.yml
 
 # Add the Istio & Tekton
 https://github.com/redhat-developer-demos/guru-night
