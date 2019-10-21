@@ -1,0 +1,23 @@
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  name: yq
+spec:
+  inputs:
+    params:
+    - name: yq-image
+      description: yq CLI container image to run this task
+      default: docker.io/mikefarah/yq
+    - name: ARGS
+      type: array
+      description: yq CLI arguments to run
+      default:
+      - "help"
+    resources:
+    - name: image
+      type: image
+  steps:
+  - name: kn
+    image: "$(inputs.params.yq-image)"
+    command: ["yq"]
+    args: ["$(inputs.params.ARGS)"]

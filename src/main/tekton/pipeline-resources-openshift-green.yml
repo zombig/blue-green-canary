@@ -1,0 +1,23 @@
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: bgc-git-source
+spec:
+  type: git
+  params: 
+  - name: url
+    value: https://github.com/burrsutter/blue-green-canary
+  - name: revision
+    value: master
+---
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: bgc-image
+spec:
+  type: image
+  params: 
+  - name: url
+    #value: "dev.local/rhdevelopers/stream-greeter"
+    # if you are on OpenShift uncomment the line below
+    value: "image-registry.openshift-image-registry.svc:5000/burrsutter/blue-green-canary:green"

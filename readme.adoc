@@ -1,7 +1,147 @@
-== Blue, Green, Canary Deployments
+= Blue, Green, Canary Deployments
+
+== Minikube
+----
+curl -L https://github.com/istio/istio/releases/download/1.3.0/istio-1.3.0-osx.tar.gz | tar xz
+
+cd istio-1.3.0
+
+for i in install/kubernetes/helm/istio-init/files/crd*yaml; do kubectl apply -f $i; done
+
+kubectl create -f install/kubernetes/istio-demo.yaml
+
+kubectl create namespace demo
+
+kubectl label namespace demo istio-injection=enabled
+
+kubens demo
+
+./4_service.sh
+
+./5_deploy_blue.sh
+
+./5_deploy_green.sh
+
+./5_deploy_canary.sh
+
+./6_deploy_gateway.sh
+
+watch kubectl get pods
+
+./poll_bgc_minikube_gateway.sh
+
+# Should be alternating across blue/green/canary
+
+kubectl create -f src/main/istio/Destination_rule_blue_green.yml
+
+kubectl replace -f src/main/istio/Virtual_service_blue.yml
+----
+
+=== Tekton
 
 ----
-kubectl create namespace devoops
 
-kubectl label namespace devoops  istio-injection=enabled
+----
+
+
+== OpenShift
+
+----
+oc new-project demo
+oc create serviceaccount pipeline
+oc adm policy add-scc-to-user privileged -z pipeline
+oc adm policy add-role-to-user edit -z pipeline
+
+# Add the Istio & Tekton
+https://github.com/redhat-developer-demos/guru-night
+
+cd guru-night
+
+cp setenv.example setenv.sh
+
+mkdir work
+
+edit setenv.sh
+
+./workshopper installCatalogSources
+./workshopper installServicemesh
+./workshopper createServicemesh
+./workshopper createUsers
+./workshopper installPipelines
+
+kubectl create namespace demo
+
+kubectl label namespace demo istio-injection=enabled
+
+kubens demo
+
+./4_service.sh
+
+./5_deploy_blue.sh
+
+./5_deploy_green.sh
+
+./5_deploy_canary.sh
+
+./6_deploy_gateway.sh
+
+watch kubectl get pods
+
+./poll_bgc_ocp4_gateway.sh
+
+# Should be alternating across blue/green/canary
+
+kubectl create -f src/main/istio/Destination_rule_blue_green.yml
+
+kubectl replace -f src/main/istio/Virtual_service_blue.yml
+
+----
+
+=== Pipelines Tekton
+----
+oc api-resources --api-group='tekton.dev'
+
+oc get pods -n openshift-pipelines
+
+oc new-project rhd-workshop-infra
+oc new-app sonatype/nexus -n rhd-workshop-infra
+
+oc project demo
+
+# Declare Resources
+oc create -f src/main/tekton/pipeline-resources-openshift-green.yml
+
+tkn res ls
+NAME             TYPE    DETAILS
+bgc-git-source   git     url: https://github.com/burrsutter/blue-green-canary
+bgc-image        image   url: image-registry.openshift-image-registry.svc:5000/burrsutter/blue-green-canary:green
+
+# Declare Tasks
+# yq
+oc apply -f src/main/tekton/task-yq.yml
+# oc
+kubectl apply -f https://raw.githubusercontent.com/tektoncd/catalog/master/openshift-client/openshift-client-task.yaml
+# mvn & buildah
+oc apply -f src/main/tekton/task-mvn-buildah.yml
+
+tkn task ls
+NAME               AGE
+mvn-image-build    4 seconds ago
+openshift-client   7 seconds ago
+yq                 28 seconds ago
+
+# Declare Pipelines
+oc apply -f src/main/tekton/pipeline-green.yml
+
+tkn pipeline ls
+NAME               AGE             LAST RUN   STARTED   DURATION   STATUS
+bgc-build-deploy   5 seconds ago   ---        ---       ---        ---
+
+# Start Pipeline
+tkn pipeline start bgc-build-deploy \
+ --param="mavenMirrorUrl=http://nexus.rhd-workshop-infra:8081/nexus/content/groups/public"  \
+ --resource="appSource=bgc-git-source" \
+ --resource="appImage=bgc-image" \
+ --serviceaccount='pipeline'
+
 ----

@@ -1,0 +1,61 @@
+apiVersion: tekton.dev/v1alpha1
+kind: Pipeline
+metadata:
+  name: bgc-build-deploy
+spec:
+  params:
+  - name: mavenMirrorUrl
+    description: the maven mirror
+    default: http://repo1.maven.apache.org/maven2
+  - name: contextDir
+    description: the context directory of the Java sources
+    default: .    
+  - name: kubernetesResourceFile
+    description: the kubernetes resource file to apply
+    default: $(params.contextDir)/src/main/kubernetes/Deployment_green.yml
+  resources: 
+  - name: appSource
+    type: git
+  - name: appImage
+    type: image
+  tasks: 
+   - name: build-java-app
+     taskRef:
+       name: mvn-image-build
+     params:
+      - name: contextDir
+        value: "$(params.contextDir)"
+      - name: mavenMirrorUrl
+        value: "$(params.mavenMirrorUrl)"
+     resources:
+      inputs:
+        - name: source
+          resource: appSource
+      outputs:
+        - name: builtImage
+          resource: appImage
+   - name: set-image
+     taskRef:
+       name: yq
+     runAfter:
+      - build-java-app
+     params:
+      - name: ARGS
+        value:
+        - "w"
+        - "$(params.contextDir)/src/kubernetes/Deployment_green.yml"
+        - "-d1"
+        - "spec.template.spec.containers[0].image"
+        - "green"
+        - "$(inputs.resources.image.url)"
+   - name: deploy-service
+     taskRef:
+       name: openshift-client
+     runAfter:
+      - set-image
+     params:
+      - name: ARGS
+        value:
+        - "apply"
+        - "-f"
+        - "$(params.contextDir)/src/kubernetes/Deployment_green.yml"
