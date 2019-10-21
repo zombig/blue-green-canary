@@ -39,6 +39,10 @@ spec:
        name: yq
      runAfter:
       - build-java-app
+     resources:
+      inputs:
+        - name: image
+          resource: appImage      
      params:
       - name: ARGS
         value:
@@ -53,9 +57,13 @@ spec:
        name: openshift-client
      runAfter:
       - set-image
+     resources:
+      inputs:
+        - name: image
+          resource: appImage      
      params:
       - name: ARGS
         value:
         - "apply"
         - "-f"
-        - "$(params.contextDir)/src/kubernetes/Deployment_green.yml"
+        - "$(params.contextDir)/src/main/kubernetes/Deployment_green.yml"
