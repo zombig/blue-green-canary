@@ -49,15 +49,16 @@ kubectl replace -f src/main/istio/Virtual_service_blue.yml
 ----
 # 16 cores available in worker nodes
 
-oc new-project demo
+
+
+# the SA is auto-configured based on the pipelines operator
 # oc create serviceaccount pipeline
 # oc adm policy add-scc-to-user privileged -z pipeline
 # oc adm policy add-role-to-user edit -z pipeline
-
-oc create -f src/main/tekton/pipeline-sa-role.yml
+# oc create -f src/main/tekton/pipeline-sa-role.yml
 
 # Add the Istio & Tekton
-https://github.com/redhat-developer-demos/guru-night
+git clone https://github.com/redhat-developer-demos/guru-night
 
 cd guru-night
 
@@ -70,14 +71,15 @@ edit setenv.sh
 ./workshopper installCatalogSources
 ./workshopper installServicemesh
 ./workshopper createServicemesh
+oc api-resources --api-group='networking.istio.io'
 ./workshopper createUsers
 ./workshopper installPipelines
 
-kubectl create namespace demo
-
-kubectl label namespace demo istio-injection=enabled
+oc new-project bgc
 
 kubens demo
+
+# Add kind: ServiceMeshMemberRoll via the Operator UI into istio-system
 
 ./4_service.sh
 
@@ -110,7 +112,7 @@ oc get pods -n openshift-pipelines
 oc new-project rhd-workshop-infra
 oc new-app sonatype/nexus -n rhd-workshop-infra
 
-oc project demo
+oc project bgc
 
 # Declare Resources
 oc create -f src/main/tekton/pipeline-resources-openshift-green.yml
