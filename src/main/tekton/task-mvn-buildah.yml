@@ -19,7 +19,7 @@ spec:
      default: "$(outputs.resources.builtImage.url)"
    - name: dockerFile
      description: Parameter Description
-     default: src/main/docker/Dockerfile.jvm
+     default: src/main/docker/Dockerfile
   outputs:
    resources:
     - name: builtImage
