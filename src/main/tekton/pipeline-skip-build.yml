@@ -9,7 +9,7 @@ spec:
     default: http://repo1.maven.apache.org/maven2
   - name: kubernetesResourceFile
     description: the kubernetes resource file to apply
-    default: Deployment.yml
+    default: /workspace/source/src/main/kubernetes/Deployment_burr.yml
   - name: contextDir
     description: the context directory of the Java sources
     default: .
@@ -29,10 +29,12 @@ spec:
         - name: image
           resource: appImage
      params:
+      - name: kubernetesResourceFile
+        value: "$(params.kubernetesResourceFile)"
       - name: ARGS
         value:
         - "w"
         - "-i"        
-        - "/workspace/source/src/main/kubernetes/Deployment_burr.yml"
+        - "$(params.kubernetesResourceFile)"
         - "spec.template.spec.containers[0].image"
         - "$(inputs.resources.image.url)"

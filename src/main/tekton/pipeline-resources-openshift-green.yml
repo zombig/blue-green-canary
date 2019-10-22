@@ -20,4 +20,4 @@ spec:
   - name: url
     #value: "dev.local/rhdevelopers/stream-greeter"
     # if you are on OpenShift uncomment the line below
-    value: "image-registry.openshift-image-registry.svc:5000/knativetutorial/blue-green-canary:green"
+    value: "image-registry.openshift-image-registry.svc:5000/one/blue-green-canary:green"

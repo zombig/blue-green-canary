@@ -49,8 +49,6 @@ kubectl replace -f src/main/istio/Virtual_service_blue.yml
 ----
 # 16 cores available in worker nodes
 
-
-
 # the SA is auto-configured based on the pipelines operator
 # oc create serviceaccount pipeline
 # oc adm policy add-scc-to-user privileged -z pipeline
@@ -123,10 +121,8 @@ bgc-git-source   git     url: https://github.com/burrsutter/blue-green-canary
 bgc-image        image   url: image-registry.openshift-image-registry.svc:5000/burrsutter/blue-green-canary:green
 
 # Declare Tasks
-# yq
-oc apply -f src/main/tekton/task-yq.yml
-# oc
-kubectl apply -f https://raw.githubusercontent.com/tektoncd/catalog/master/openshift-client/openshift-client-task.yaml
+# yq & kubectl apply
+oc apply -f src/main/tekton/task-yq-deploy.yml
 # mvn & buildah
 oc apply -f src/main/tekton/task-mvn-buildah.yml
 
@@ -146,6 +142,7 @@ bgc-build-deploy   5 seconds ago   ---        ---       ---        ---
 # Start Pipeline
 tkn pipeline start bgc-build-deploy \
  --param="mavenMirrorUrl=http://nexus.rhd-workshop-infra:8081/nexus/content/groups/public"  \
+ --param="kubernetesResourceFile=/workspace/source/src/main/kubernetes/Deployment_green.yml" \
  --resource="appSource=bgc-git-source" \
  --resource="appImage=bgc-image" \
  --serviceaccount="pipeline"

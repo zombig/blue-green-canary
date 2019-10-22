@@ -42,9 +42,10 @@ spec:
      image: quay.io/rhdevelopers/tutorial-tools:0.0.2
      workingDir: "/workspace/source/$(inputs.params.contextDir)"
      args:
-      - mvn
+      - mvn      
       - clean 
       - package
+      - -DskipTests
      env:
      - name: MAVEN_MIRROR_URL
        value: "$(inputs.params.mavenMirrorUrl)"

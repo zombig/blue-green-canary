@@ -10,29 +10,31 @@ spec:
       default: docker.io/mikefarah/yq
     - name: ARGS
       type: array
+    - name: kubernetesResourceFile
+      default: Deployment.yml
     resources:
     - name: image
       type: image
     - name: source
       type: git      
   steps:
-  - name: before-yq-ls
+  - name: before-yq-echo
     image: fedora
-    command: ['ls', '/workspace/source/']
+    command: ['echo', '$(inputs.params.kubernetesResourceFile)']
   - name: before-yq-cat
     image: fedora
-    command: ['cat', '/workspace/source/src/main/kubernetes/Deployment_burr.yml']
+    command: ['cat', '$(inputs.params.kubernetesResourceFile)']
   - name: yq
     image: "$(inputs.params.yq-image)"
     command: ["yq"]
     args: ["$(inputs.params.ARGS)"]
   - name: after-yq-cat
     image: fedora
-    command: ['cat', '/workspace/source/src/main/kubernetes/Deployment_burr.yml']
+    command: ['cat', '$(inputs.params.kubernetesResourceFile)']
   - name: kubctl-deploy
     image: quay.io/rhdevelopers/tutorial-tools:0.0.2
     command: ['kubectl']
     args:
     - apply
     - -f 
-    - /workspace/source/src/main/kubernetes/Deployment_burr.yml
+    - $(inputs.params.kubernetesResourceFile)
