@@ -17,7 +17,7 @@ spec:
     - name: image
       type: image
   steps:
-  - name: kn
+  - name: yq
     image: "$(inputs.params.yq-image)"
     command: ["yq"]
     args: ["$(inputs.params.ARGS)"]

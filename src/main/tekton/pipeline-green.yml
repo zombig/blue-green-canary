@@ -47,7 +47,7 @@ spec:
       - name: ARGS
         value:
         - "w"
-        - "$(params.contextDir)/src/kubernetes/Deployment_green.yml"
+        - "$(params.contextDir)/Deployment.yml"
         - "-d1"
         - "spec.template.spec.containers[0].image"
         - "green"
@@ -62,4 +62,4 @@ spec:
         value:
         - "apply"
         - "-f"
-        - "$(params.contextDir)/src/main/kubernetes/Deployment_green.yml"
+        - "$(params.contextDir)/Deployment.yml"
