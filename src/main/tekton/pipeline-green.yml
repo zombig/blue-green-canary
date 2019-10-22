@@ -7,12 +7,12 @@ spec:
   - name: mavenMirrorUrl
     description: the maven mirror
     default: http://repo1.maven.apache.org/maven2
-  - name: contextDir
-    description: the context directory of the Java sources
-    default: .    
   - name: kubernetesResourceFile
     description: the kubernetes resource file to apply
-    default: $(params.contextDir)/src/main/kubernetes/Deployment_green.yml
+    default: Deployment.yml
+  - name: contextDir
+    description: the context directory of the Java sources
+    default: .
   resources: 
   - name: appSource
     type: git
@@ -42,7 +42,7 @@ spec:
      resources:
       inputs:
         - name: image
-          resource: appImage
+          resource: appImage 
      params:
       - name: ARGS
         value:
