@@ -1,0 +1,60 @@
+apiVersion: tekton.dev/v1alpha1
+kind: Pipeline
+metadata:
+  name: bgc-build-deploy
+spec:
+  params:
+  - name: mavenMirrorUrl
+    description: the maven mirror
+    default: http://repo1.maven.apache.org/maven2
+  - name: kubernetesResourceFile
+    description: the kubernetes resource file to apply
+    default: /workspace/source/src/main/kubernetes/Deployment_burr.yml
+  - name: contextDir
+    description: the context directory of the Java sources
+    default: .
+  resources: 
+  - name: appSource
+    type: git
+  - name: appImage
+    type: image
+  tasks: 
+   - name: build-java-app
+     taskRef:
+       name: mvn-image-build
+     params:
+      - name: contextDir
+        value: "$(params.contextDir)"
+      - name: mavenMirrorUrl
+        value: "$(params.mavenMirrorUrl)"
+      - name: dockerFile
+        value: src/main/docker/Dockerfile.jvm  
+     resources:
+      inputs:
+        - name: source
+          resource: appSource
+      outputs:
+        - name: builtImage
+          resource: appImage
+   - name: deploy
+     taskRef:
+       name: yq-deploy
+     runAfter:
+      - build-java-app
+     resources:
+      inputs:
+        - name: source
+          resource: appSource
+        - name: image
+          resource: appImage
+     params:
+      - name: kubernetesResourceFile
+        value: "$(params.kubernetesResourceFile)"
+      - name: ARGS
+        value:
+        - "w"
+        - "-i"        
+        - "$(params.kubernetesResourceFile)"
+        - "spec.template.spec.containers[0].image"
+        - "$(inputs.resources.image.url)"
+   
