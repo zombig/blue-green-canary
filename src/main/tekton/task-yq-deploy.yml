@@ -1,0 +1,38 @@
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  name: yq-deploy
+spec:
+  inputs:
+    params:
+    - name: yq-image
+      description: yq CLI container image to run this task
+      default: docker.io/mikefarah/yq
+    - name: ARGS
+      type: array
+    resources:
+    - name: image
+      type: image
+    - name: source
+      type: git      
+  steps:
+  - name: before-yq-ls
+    image: fedora
+    command: ['ls', '/workspace/source/']
+  - name: before-yq-cat
+    image: fedora
+    command: ['cat', '/workspace/source/src/main/kubernetes/Deployment_burr.yml']
+  - name: yq
+    image: "$(inputs.params.yq-image)"
+    command: ["yq"]
+    args: ["$(inputs.params.ARGS)"]
+  - name: after-yq-cat
+    image: fedora
+    command: ['cat', '/workspace/source/src/main/kubernetes/Deployment_burr.yml']
+  - name: kubctl-deploy
+    image: quay.io/rhdevelopers/tutorial-tools:0.0.2
+    command: ['kubectl']
+    args:
+    - apply
+    - -f 
+    - /workspace/source/src/main/kubernetes/Deployment_burr.yml

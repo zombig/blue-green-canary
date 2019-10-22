@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1alpha1
 kind: Pipeline
 metadata:
-  name: bgc-build-deploy
+  name: bgc-skip-build-deploy
 spec:
   params:
   - name: mavenMirrorUrl
@@ -19,26 +19,9 @@ spec:
   - name: appImage
     type: image
   tasks: 
-   - name: build-java-app
-     taskRef:
-       name: mvn-image-build
-     params:
-      - name: contextDir
-        value: "$(params.contextDir)"
-      - name: mavenMirrorUrl
-        value: "$(params.mavenMirrorUrl)"
-     resources:
-      inputs:
-        - name: source
-          resource: appSource
-      outputs:
-        - name: builtImage
-          resource: appImage
    - name: deploy
      taskRef:
        name: yq-deploy
-     runAfter:
-      - build-java-app
      resources:
       inputs:
         - name: source
@@ -53,4 +36,3 @@ spec:
         - "/workspace/source/src/main/kubernetes/Deployment_burr.yml"
         - "spec.template.spec.containers[0].image"
         - "$(inputs.resources.image.url)"
-   

@@ -43,7 +43,6 @@ spec:
      workingDir: "/workspace/source/$(inputs.params.contextDir)"
      args:
       - mvn
-      - -DskipTests 
       - clean 
       - package
      env:
