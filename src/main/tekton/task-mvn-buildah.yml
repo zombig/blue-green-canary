@@ -38,6 +38,9 @@ spec:
        # the default underprivileged user to be used
        runAsUser: 10001
   steps:
+   - name: ls-build-sources
+     image: fedora
+     command: ['ls', '/workspace/source']
    - name: build-sources
      image: quay.io/rhdevelopers/tutorial-tools:0.0.2
      workingDir: "/workspace/source/$(inputs.params.contextDir)"
@@ -49,6 +52,9 @@ spec:
      env:
      - name: MAVEN_MIRROR_URL
        value: "$(inputs.params.mavenMirrorUrl)"
+   - name: ls-build-target
+     image: fedora
+     command: ['ls', '/workspace/source/target']
    - name: build-image
      image: quay.io/buildah/stable
      workingDir: "/workspace/source/$(inputs.params.contextDir)"
