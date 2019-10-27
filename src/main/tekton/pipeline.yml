@@ -21,7 +21,7 @@ spec:
   tasks: 
    - name: build-java-app
      taskRef:
-       name: mvn-image-build
+       name: mvn-buildah
      params:
       - name: contextDir
         value: "$(params.contextDir)"

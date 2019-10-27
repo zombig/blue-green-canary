@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1alpha1
 kind: Task
 metadata:
-   name: mvn-image-build   
+   name: mvn-buildah
 spec:
   inputs:
    resources:
@@ -41,6 +41,15 @@ spec:
    - name: ls-build-sources
      image: fedora
      command: ['ls', '/workspace/source']
+   - name: echo-dockerfile
+     image: fedora
+     command: ['echo', '$(inputs.params.dockerFile)']
+   - name: cat-dockerfile
+     image: fedora
+     command: ['cat', '/workspace/source/$(inputs.params.dockerFile)']
+   - name: echo-destinationimage    
+     image: fedora
+     command : ['echo', '$(inputs.params.destinationImage)']
    - name: build-sources
      image: quay.io/rhdevelopers/tutorial-tools:0.0.2
      workingDir: "/workspace/source/$(inputs.params.contextDir)"
