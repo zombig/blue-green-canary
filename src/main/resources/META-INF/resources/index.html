@@ -30,6 +30,7 @@
     </style>
 
   </head>
+
   <body>
     <!--
     <section>
@@ -61,7 +62,9 @@
             document.getElementById("msgCount").textContent = message.msgCount;            
           }
        };
-       xhttp.open("GET", "http://" + location.host + "/api", true);
+       polledURL = "http://" + location.host + "/api";
+       console.log("BURR: " + polledURL);
+       xhttp.open("GET", polledURL, true);
        xhttp.send();
 
        setTimeout(poll, 2000);
