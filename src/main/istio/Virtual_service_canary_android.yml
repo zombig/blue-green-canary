@@ -11,7 +11,7 @@ spec:
   - match:
     - headers:
         user-agent:
-          regex: .*Mobile.*
+          regex: .*Android.*
     route:
     - destination:
         host: blue-green-canary
