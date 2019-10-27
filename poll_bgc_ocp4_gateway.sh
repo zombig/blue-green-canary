@@ -1,12 +1,12 @@
 #!/bin/bash
 
-URL=$(kubectl get route istio-ingressgateway -n istio-system --output 'jsonpath={.status.ingress[].host}')/hello
+URL=$(kubectl get route istio-ingressgateway -n istio-system --output 'jsonpath={.status.ingress[].host}')/api
 
 echo $URL
 
 while true
 do 
-  curl $URL
+  curl -s $URL | jq -r '.pod'
   echo
   sleep .3;
 done
