@@ -6,8 +6,9 @@ echo $URL
 
 while true
 do 
-  curl -s $URL | jq -r '.pod'
-  echo
+  # output = $eval("curl -s $URL | jq -r '.pod'")
+  curl -s $URL
+  echo 
   sleep .3;
 done
 
