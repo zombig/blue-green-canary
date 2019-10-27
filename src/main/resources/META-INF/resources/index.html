@@ -49,7 +49,9 @@
       // make Ajax call here, inside the callback call:
         var xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function() {
-          if (this.readyState == 4 && this.status == 200) {        
+          if (this.readyState == 4 && this.status == 200) {
+            console.log("host: " + location.host);
+            console.log("response: " +  this.responseText);
             message = JSON.parse(this.responseText);
             console.log(message);
             // console.log(message.msgCount + " " + message.color);
