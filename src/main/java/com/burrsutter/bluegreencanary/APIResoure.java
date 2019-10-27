@@ -25,8 +25,8 @@ public class APIResoure {
   int userCount = 0;
   int msgCount = 0;
   // String color = "#6bbded"; // blue
-  String color = "#5bbf45"; // green
-  // String color = "#f2f25e"; // canary
+  // String color = "#5bbf45"; // green
+  String color = "#f2f25e"; // canary
 
   String hostname = System.getenv().getOrDefault("HOSTNAME", "unknown");
   // Map<String, HttpSession> sessions = new ConcurrentHashMap<>();
