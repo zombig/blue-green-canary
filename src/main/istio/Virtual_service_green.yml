@@ -20,15 +20,3 @@ spec:
           number: 8080
         subset: version-green        
       weight: 100
-  - match:
-    - uri:
-        prefix: /hello
-    rewrite:
-      uri: /hello
-    route:
-    - destination:
-        host: blue-green-canary
-        port:
-          number: 8080
-        subset: version-green
-      weight: 100
