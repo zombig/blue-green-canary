@@ -38,13 +38,15 @@
     </section>
     -->
     <section>
-    <p class="sans_big">Messages: <div class="sans_big" id="msgCount"></div></p>
+    <p class="sans_big">Count: <div class="sans_big" id="msgCount"></div></p>
     </section>
     <section>
     <p class="sans_less_big">Pod: <div class="sans_less_big" id="pod"></div></p>
     </section>
-
-
+    <section>
+    <p class="sans_less_big">Greeting: <div class="sans_less_big" id="hello"></div></p>
+    </section>
+  
     <script>      
 
     function poll() {
@@ -59,7 +61,8 @@
             // console.log(message.msgCount + " " + message.color);
             document. body. style. background = message.color;
             document.getElementById("pod").textContent = message.pod;
-            document.getElementById("msgCount").textContent = message.msgCount;            
+            document.getElementById("msgCount").textContent = message.msgCount;
+            document.getElementById("hello").textContent = message.hello;
           }
        };
        polledURL = "http://" + location.host + "/api";

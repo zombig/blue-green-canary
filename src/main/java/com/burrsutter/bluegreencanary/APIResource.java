@@ -41,7 +41,7 @@ public class APIResource {
     StringBuffer msg = new StringBuffer();
         msg.append("{");
         msg.append("\"msgCount\" :" + msgCount);
-        msg.append(", \"msg\" : \"" + hello + "\"");        
+        msg.append(", \"hello\" : \"" + hello + "\"");        
         msg.append(", \"pod\" : \"" + hostname + "\"");
         msg.append(", \"useragent\" : \"" + useragent + "\"");        
         msg.append(", \"color\" : \"" + color + "\"");
