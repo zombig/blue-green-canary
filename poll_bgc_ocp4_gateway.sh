@@ -9,6 +9,6 @@ do
   # output = $eval("curl -s $URL | jq -r '.pod'")
   curl -s $URL
   echo 
-  sleep .3;
+  sleep .4;
 done
 
