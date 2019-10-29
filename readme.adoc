@@ -1,6 +1,10 @@
 = Blue, Green, Canary Deployments
 
-== Minikube
+With Tekton pipeline builds
+
+With Istio 
+
+== Minikube (Incomplete)
 ----
 curl -L https://github.com/istio/istio/releases/download/1.3.0/istio-1.3.0-osx.tar.gz | tar xz
 
@@ -37,23 +41,17 @@ kubectl create -f src/main/istio/Destination_rule_blue_green.yml
 kubectl replace -f src/main/istio/Virtual_service_blue.yml
 ----
 
-=== Tekton
+=== Tekton on Minikube
 
+Incomplete
 ----
 
 ----
-
 
 == OpenShift
 
 ----
 # 16 cores available in worker nodes
-
-# the SA is auto-configured based on the pipelines operator
-# oc create serviceaccount pipeline
-# oc adm policy add-scc-to-user privileged -z pipeline
-# oc adm policy add-role-to-user edit -z pipeline
-# oc create -f src/main/tekton/pipeline-sa-role.yml
 
 # Add the Istio & Tekton
 git clone https://github.com/redhat-developer-demos/guru-night
@@ -70,34 +68,12 @@ edit setenv.sh
 ./workshopper installServicemesh
 ./workshopper createServicemesh
 oc api-resources --api-group='networking.istio.io'
-./workshopper createUsers
+# ./workshopper createUsers
 ./workshopper installPipelines
 
-oc new-project bgc
 
-kubens demo
+# Add kind: ServiceMeshMemberRoll via the Operator UI into namespace istio-system
 
-# Add kind: ServiceMeshMemberRoll via the Operator UI into istio-system
-
-./4_service.sh
-
-./5_deploy_blue.sh
-
-./5_deploy_green.sh
-
-./5_deploy_canary.sh
-
-./6_deploy_gateway.sh
-
-watch kubectl get pods
-
-./poll_bgc_ocp4_gateway.sh
-
-# Should be alternating across blue/green/canary
-
-kubectl create -f src/main/istio/Destination_rule_blue_green.yml
-
-kubectl replace -f src/main/istio/Virtual_service_blue.yml
 
 ----
 
@@ -109,42 +85,75 @@ oc get pods -n openshift-pipelines
 
 oc new-project rhd-workshop-infra
 oc new-app sonatype/nexus -n rhd-workshop-infra
+oc get pods -n rhd-workshop-infra
 
-oc project bgc
+oc new-project one
+
+git clone https://github.com/burrsutter/blue-green-canary
+
+./4_service.sh
+
 
 # Declare Resources
-oc create -f src/main/tekton/pipeline-resources-openshift-green.yml
+oc create -f src/main/tekton/pipeline-resources-openshift.yml
 
 tkn res ls
-NAME             TYPE    DETAILS
-bgc-git-source   git     url: https://github.com/burrsutter/blue-green-canary
-bgc-image        image   url: image-registry.openshift-image-registry.svc:5000/burrsutter/blue-green-canary:green
+NAME               TYPE    DETAILS
+bgc-git-source     git     url: https://github.com/burrsutter/blue-green-canary
+bgc-image-blue     image   url: image-registry.openshift-image-registry.svc:5000/one/blue-green-canary:blue
+bgc-image-canary   image   url: image-registry.openshift-image-registry.svc:5000/one/blue-green-canary:canary
+bgc-image-green    image   url: image-registry.openshift-image-registry.svc:5000/one/blue-green-canary:green
 
 # Declare Tasks
 # yq & kubectl apply
 oc apply -f src/main/tekton/task-yq-deploy.yml
 # mvn & buildah
 oc apply -f src/main/tekton/task-mvn-buildah.yml
+oc apply -f src/main/tekton/task-mvn-buildah.yml
+
 
 tkn task ls
 NAME               AGE
-mvn-image-build    4 seconds ago
-openshift-client   7 seconds ago
-yq                 28 seconds ago
+mvn-buildah        4 seconds ago
+yq-deploy          28 seconds ago
 
 # Declare Pipelines
-oc apply -f src/main/tekton/pipeline-green.yml
+oc apply -f src/main/tekton/pipeline.yml
 
 tkn pipeline ls
 NAME               AGE             LAST RUN   STARTED   DURATION   STATUS
 bgc-build-deploy   5 seconds ago   ---        ---       ---        ---
 
-# Start Pipeline
-tkn pipeline start bgc-build-deploy \
- --param="mavenMirrorUrl=http://nexus.rhd-workshop-infra:8081/nexus/content/groups/public"  \
- --param="kubernetesResourceFile=/workspace/source/src/main/kubernetes/Deployment_green.yml" \
- --resource="appSource=bgc-git-source" \
- --resource="appImage=bgc-image" \
- --serviceaccount="pipeline"
+# Check APIResource.java for Aloha/blue
+
+https://github.com/burrsutter/blue-green-canary/blob/master/src/main/java/com/burrsutter/bluegreencanary/APIResource.java
+
+# Start the pipeline
+./5_start_pipeline_blue.sh
+
+# Use list_containers.sh 
+
+# Change APIResource.java for Bonjour/green
+./5_start_pipeline_green.sh
+
+# Change APIResource.java for Hola/canary
+./5_start_pipeline_canary.sh
+
+./6_deploy_gateway.sh
+
+watch kubectl get pods
+
+./poll_bgc_ocp4_gateway.sh
+
+# Should be alternating across blue/green/canary
+
+# the URL for your browser
+URL=$(kubectl get route istio-ingressgateway -n istio-system --output 'jsonpath={.status.ingress[].host}')/api
+
+# everybody blue
+kubectl replace -f src/main/istio/Virtual_service_blue.yml
+
+# everybody green
+kubectl replace -f src/main/istio/Virtual_service_green.yml
 
 ----
